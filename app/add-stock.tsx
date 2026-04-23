@@ -23,28 +23,28 @@ export default function AddStock() {
     <View style={{ padding: 20 }}>
       <Text style={{ fontSize: 24 }}>Add Stock</Text>
 
-      <TextInput 
-        placeholder="Quantity (kg)" 
+      <TextInput
+        placeholder="Quantity (kg)"
         keyboardType="numeric"
         onChangeText={setQty}
         style={{ borderWidth: 1, marginTop: 15, padding: 10 }}
       />
 
-      <TextInput 
-        placeholder="Price per kg" 
+      <TextInput
+        placeholder="Price per kg"
         keyboardType="numeric"
         onChangeText={setPrice}
         style={{ borderWidth: 1, marginTop: 15, padding: 10 }}
       />
 
-      <TextInput 
-        placeholder="Service Charge (%)" 
+      <TextInput
+        placeholder="Service Charge (%)"
         keyboardType="numeric"
         onChangeText={setCharge}
         style={{ borderWidth: 1, marginTop: 15, padding: 10 }}
       />
 
-      <Pressable 
+      <Pressable
         onPress={calculate}
         style={{ backgroundColor: 'green', padding: 15, marginTop: 20 }}
       >
