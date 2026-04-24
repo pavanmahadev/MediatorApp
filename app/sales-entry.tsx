@@ -3,10 +3,9 @@ import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView, Keyboa
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
-export default function PurchaseEntry() {
+export default function SalesEntry() {
   const router = useRouter();
 
-  // Basic state for UI simulation
   const [items, setItems] = useState([{ id: 1 }]);
 
   const addItem = () => {
@@ -28,24 +27,24 @@ export default function PurchaseEntry() {
             <Ionicons name="arrow-back" size={24} color="#111" />
           </TouchableOpacity>
           <View>
-            <Text style={styles.headerTitle}>Purchase Entry</Text>
-            <Text style={styles.headerSubtitle}>Record Stock from Farmer</Text>
+            <Text style={styles.headerTitle}>Sales Entry</Text>
+            <Text style={styles.headerSubtitle}>Record Sale to Buyer</Text>
           </View>
         </View>
-        <Ionicons name="receipt-outline" size={24} color="#2E7D32" />
+        <Ionicons name="cart-outline" size={24} color="#2E7D32" />
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         
-        {/* 2. FARMER SECTION */}
+        {/* 2. BUYER SECTION */}
         <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Farmer Details</Text>
+          <Text style={styles.sectionTitle}>Buyer Details</Text>
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Select Farmer</Text>
+            <Text style={styles.label}>Select Buyer</Text>
             <View style={styles.searchContainer}>
               <Ionicons name="search" size={20} color="#999" />
               <TextInput 
-                placeholder="Search farmer name or phone" 
+                placeholder="Search buyer name or phone" 
                 style={styles.searchInput}
                 placeholderTextColor="#999"
               />
@@ -58,7 +57,7 @@ export default function PurchaseEntry() {
           <View style={styles.flexHalf}>
             <Text style={styles.label}>Bill ID</Text>
             <View style={styles.disabledInput}>
-              <Text style={styles.disabledText}>#INV-4501</Text>
+              <Text style={styles.disabledText}>#SLS-1025</Text>
             </View>
           </View>
           <View style={styles.flexHalf}>
@@ -73,7 +72,7 @@ export default function PurchaseEntry() {
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Service Charge (%)</Text>
             <TextInput 
-              placeholder="e.g. 5" 
+              placeholder="e.g. 2" 
               style={styles.input}
               keyboardType="numeric"
               placeholderTextColor="#999"
@@ -81,10 +80,10 @@ export default function PurchaseEntry() {
           </View>
         </View>
 
-        {/* 4. VEGETABLE ENTRY TABLE */}
+        {/* 4. SALE ITEMS TABLE */}
         <View style={styles.card}>
           <View style={styles.cardHeaderRow}>
-            <Text style={styles.sectionTitle}>Items</Text>
+            <Text style={styles.sectionTitle}>Sale Items</Text>
             <TouchableOpacity onPress={addItem}>
               <Text style={styles.addText}>+ Add Item</Text>
             </TouchableOpacity>
@@ -103,6 +102,7 @@ export default function PurchaseEntry() {
                     placeholderTextColor="#999"
                   />
                 </View>
+                <Text style={styles.stockText}>Available Stock: 500 kg</Text>
               </View>
               
               <View style={styles.multiInputRow}>
@@ -134,7 +134,7 @@ export default function PurchaseEntry() {
 
         {/* 5. CHARGES SECTION */}
         <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Additional Charges</Text>
+          <Text style={styles.sectionTitle}>Additional Charges & Payment</Text>
           
           <View style={styles.multiInputRow}>
             <View style={styles.flexHalfInput}>
@@ -153,7 +153,7 @@ export default function PurchaseEntry() {
               <TextInput style={styles.input} placeholder="0" keyboardType="numeric" />
             </View>
             <View style={styles.flexHalfInput}>
-              <Text style={styles.label}>Cash Paid (₹)</Text>
+              <Text style={styles.label}>Cash Received (₹)</Text>
               <TextInput style={styles.input} placeholder="0" keyboardType="numeric" />
             </View>
           </View>
@@ -161,30 +161,30 @@ export default function PurchaseEntry() {
 
         {/* 6. SUMMARY SECTION */}
         <View style={styles.summaryCard}>
-          <Text style={styles.summaryTitle}>Bill Summary</Text>
+          <Text style={styles.summaryTitle}>Sale Summary</Text>
           <View style={styles.divider} />
           
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Total Amount</Text>
+            <Text style={styles.summaryLabel}>Gross Sale</Text>
             <Text style={styles.summaryValue}>₹0.00</Text>
           </View>
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Service Charge</Text>
-            <Text style={styles.summaryValueRed}>- ₹0.00</Text>
+            <Text style={styles.summaryValueGreen}>+ ₹0.00</Text>
           </View>
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Total Charges</Text>
-            <Text style={styles.summaryValueRed}>- ₹0.00</Text>
+            <Text style={styles.summaryValueGreen}>+ ₹0.00</Text>
           </View>
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Cash Paid</Text>
+            <Text style={styles.summaryLabel}>Cash Received</Text>
             <Text style={styles.summaryValueRed}>- ₹0.00</Text>
           </View>
           
           <View style={styles.dividerDashed} />
           
           <View style={styles.finalRow}>
-            <Text style={styles.finalLabel}>Payable to Farmer</Text>
+            <Text style={styles.finalLabel}>Remaining Balance</Text>
             <Text style={styles.finalValue}>₹0.00</Text>
           </View>
         </View>
@@ -195,7 +195,7 @@ export default function PurchaseEntry() {
       <View style={styles.footer}>
         <TouchableOpacity style={styles.recordBtn} activeOpacity={0.8}>
           <Ionicons name="checkmark-circle" size={20} color="#FFF" style={{ marginRight: 8 }} />
-          <Text style={styles.recordBtnText}>Record Entry</Text>
+          <Text style={styles.recordBtnText}>Record Sale</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -298,6 +298,7 @@ const styles = StyleSheet.create({
   },
   disabledText: { fontSize: 15, color: '#666', fontWeight: '500' },
   autoText: { fontSize: 15, color: '#111', fontWeight: 'bold' },
+  stockText: { fontSize: 12, color: '#2E7D32', marginTop: 4, fontWeight: '500' },
   multiInputRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -334,6 +335,7 @@ const styles = StyleSheet.create({
   summaryLabel: { fontSize: 14, color: '#555' },
   summaryValue: { fontSize: 14, fontWeight: '600', color: '#111' },
   summaryValueRed: { fontSize: 14, fontWeight: '600', color: '#D32F2F' },
+  summaryValueGreen: { fontSize: 14, fontWeight: '600', color: '#2E7D32' },
   finalRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#E8F5E9', padding: 12, borderRadius: 8 },
   finalLabel: { fontSize: 16, fontWeight: 'bold', color: '#2E7D32' },
   finalValue: { fontSize: 20, fontWeight: 'bold', color: '#2E7D32' },

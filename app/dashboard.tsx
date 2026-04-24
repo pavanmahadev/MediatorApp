@@ -1,272 +1,228 @@
-import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import Animated, { FadeInDown, FadeInRight, useSharedValue, useAnimatedStyle, withRepeat, withTiming, withSequence, Easing } from 'react-native-reanimated';
+import React, { useEffect, useRef, useState } from 'react';
+import { Dimensions, Image, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import Animated, { FadeInDown, FadeInUp, FadeOutDown } from 'react-native-reanimated';
 
 const { width } = Dimensions.get('window');
 
 export default function Dashboard() {
   const router = useRouter();
+  const [fabOpen, setFabOpen] = useState(false);
+  const scrollViewRef = useRef<ScrollView>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Floating animation for the banner
-  const floatAnim = useSharedValue(0);
+  const baseBanners = [
+    require('../assets/images/banner1.jpg'),
+    require('../assets/images/banner2.jpg'),
+    require('../assets/images/banner3.jpg'),
+    require('../assets/images/banner4.jpg'),
+    require('../assets/images/banner5.jpg'),
+  ];
+  // Repeat the banners 50 times to simulate an infinite smooth forward loop
+  const banners = Array(50).fill(baseBanners).flat();
 
   useEffect(() => {
-    floatAnim.value = withRepeat(
-      withSequence(
-        withTiming(5, { duration: 1500, easing: Easing.inOut(Easing.ease) }),
-        withTiming(0, { duration: 1500, easing: Easing.inOut(Easing.ease) })
-      ),
-      -1,
-      true
-    );
-  }, []);
+    const timer = setInterval(() => {
+      setCurrentIndex((prevIndex) => {
+        const nextIndex = prevIndex === banners.length - 1 ? 0 : prevIndex + 1;
+        scrollViewRef.current?.scrollTo({
+          x: nextIndex * (width - 16),
+          animated: true,
+        });
+        return nextIndex;
+      });
+    }, 5000);
 
-  const animatedBannerStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateY: floatAnim.value }]
-    };
-  });
+    return () => clearInterval(timer);
+  }, [banners.length]);
 
   return (
     <View style={styles.container}>
-      {/* HEADER */}
+      {/* 1. ORIGINAL HEADER */}
       <View style={styles.header}>
-        <View style={styles.headerContent}>
-          <View style={styles.headerLeft}>
-            <View style={styles.logoBox}>
-              <Text style={styles.logoText}>Farmer<Text style={{color: '#4caf50'}}>One</Text></Text>
-            </View>
-            <View>
-              <Text style={styles.greeting}>ನಮಸ್ಕಾರ, MAHADEVASWAMY</Text>
-              <Text style={styles.welcome}>Welcome to FarmerOne</Text>
-            </View>
-          </View>
-          <TouchableOpacity style={styles.profileBtn}>
-            <Ionicons name="person" size={20} color="#2e7d32" />
-          </TouchableOpacity>
+        <View style={styles.logoBoxOriginal}>
+          <Ionicons name="leaf" size={24} color="#FFF" />
         </View>
+        <View style={styles.headerCenter}>
+          <Text style={styles.greeting}>Mahadevaswamy</Text>
+          <Text style={styles.subtitle}>Welcome to FarmerOne</Text>
+        </View>
+        <TouchableOpacity style={styles.profileBtn}>
+          <Ionicons name="person" size={16} color="#FFF" />
+        </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.scrollArea} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
-        
-        {/* MARKET REACH CAROUSEL */}
-        <Animated.ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false} 
-          contentContainerStyle={styles.carouselContainer}
-          snapToInterval={width * 0.85 + 15}
-          decelerationRate="fast"
-          entering={FadeInRight.duration(800)}
-        >
-          <View style={styles.marketCard}>
-            <View style={styles.marketIconBox}>
-              <MaterialCommunityIcons name="storefront" size={24} color="#1976d2" />
-            </View>
-            <View style={styles.marketTextContent}>
-              <Text style={styles.marketTitle}>MARKET REACH</Text>
-              <Text style={styles.marketSub}>Connecting you to 50+ major markets across Karnataka instantly.</Text>
-            </View>
-          </View>
-          <View style={[styles.marketCard, { opacity: 0.5 }]} >
-            <View style={styles.marketIconBox}>
-              <MaterialCommunityIcons name="truck-fast" size={24} color="#f57c00" />
-            </View>
-            <View style={styles.marketTextContent}>
-              <Text style={styles.marketTitle}>LOGISTICS</Text>
-              <Text style={styles.marketSub}>Fast and reliable transport for your produce.</Text>
-            </View>
-          </View>
-        </Animated.ScrollView>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
 
-        {/* ILLUSTRATION BANNER */}
-        <Animated.View style={[styles.bannerContainer, animatedBannerStyle]} entering={FadeInDown.delay(200).duration(800)}>
-          <View style={styles.bannerContent}>
-            <Text style={styles.bannerTitle}>Instant Payment. Clear Billing.</Text>
-            <View style={styles.bannerIcons}>
-              <Ionicons name="phone-portrait-outline" size={40} color="#2e7d32" />
-              <Ionicons name="arrow-forward" size={24} color="#81c784" />
-              <Ionicons name="print-outline" size={40} color="#2e7d32" />
-              <Ionicons name="arrow-forward" size={24} color="#81c784" />
-              <Ionicons name="document-text-outline" size={40} color="#2e7d32" />
-            </View>
-            <Text style={styles.bannerHighlight}>Printed Bill for Farmer</Text>
-            <Text style={styles.bannerSubtext}>No disputes • No confusion • Full transparency</Text>
-          </View>
+        {/* CAROUSEL YOU REQUESTED EARLIER */}
+        <Animated.View entering={FadeInDown.duration(400).delay(50)}>
+          <ScrollView
+            ref={scrollViewRef}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.carouselContainer}
+            snapToInterval={width - 16}
+            decelerationRate="fast"
+            onMomentumScrollEnd={(event) => {
+              const newIndex = Math.round(event.nativeEvent.contentOffset.x / (width - 16));
+              setCurrentIndex(newIndex);
+            }}
+          >
+            {banners.map((imgSrc, index) => (
+              <View key={index} style={styles.carouselCard}>
+                <Image source={imgSrc} style={styles.carouselImage} />
+              </View>
+            ))}
+          </ScrollView>
         </Animated.View>
 
-        {/* DAILY TRANSACTIONS */}
-        <Text style={styles.sectionTitle}>Daily Transactions</Text>
-        <View style={styles.row}>
-          <Animated.View entering={FadeInDown.delay(400).duration(800)} style={{ flex: 1 }}>
-            <TouchableOpacity style={styles.actionCard} onPress={() => router.push('/add-stock')}>
-              <View style={styles.cardBgCircle1} />
-              <View style={[styles.iconWrapper, { backgroundColor: '#ffebee' }]}>
-                <Ionicons name="cash-outline" size={24} color="#e64a19" />
-              </View>
-              <View style={styles.cardBottomRow}>
-                <Text style={styles.actionCardText}>Add Advance</Text>
-                <Ionicons name="arrow-forward" size={16} color="#ccc" />
-              </View>
-            </TouchableOpacity>
-          </Animated.View>
-
-          <Animated.View entering={FadeInDown.delay(500).duration(800)} style={{ flex: 1 }}>
-            <TouchableOpacity style={styles.actionCard} onPress={() => router.push('/ledger')}>
-              <View style={styles.cardBgCircle2} />
-              <View style={[styles.iconWrapper, { backgroundColor: '#f3e5f5' }]}>
-                <MaterialCommunityIcons name="handshake" size={24} color="#7b1fa2" />
-              </View>
-              <View style={styles.cardBottomRow}>
-                <Text style={styles.actionCardText}>Outstanding</Text>
-                <Ionicons name="arrow-forward" size={16} color="#ccc" />
-              </View>
-            </TouchableOpacity>
-          </Animated.View>
-        </View>
-
-        {/* BUSINESS OVERVIEW (NEW DESIGN) */}
+        {/* NEW BUSINESS OVERVIEW DESIGN */}
         <Text style={styles.sectionTitle}>Business Overview</Text>
-        
-        {/* Row 1 */}
-        <View style={styles.row}>
-          <Animated.View entering={FadeInDown.delay(600).duration(800)} style={{ flex: 1 }}>
-            <TouchableOpacity style={styles.overviewCard}>
-              <Ionicons name="clipboard-outline" size={80} color="#ffe0b2" style={styles.watermarkIcon} />
-              <View style={styles.overviewHeader}>
-                <View style={[styles.overviewIconBox, { backgroundColor: '#fff3e0' }]}>
-                  <Ionicons name="clipboard" size={16} color="#e65100" />
-                </View>
-                <Text style={styles.overviewTitle}>Pending Bill</Text>
+        <View style={styles.grid}>
+          {/* Pending Bill */}
+          <View style={styles.overviewCard}>
+            <View style={styles.overviewHeader}>
+              <View style={[styles.smallIconBox, { backgroundColor: '#FFF3E0' }]}>
+                <Ionicons name="clipboard-outline" size={14} color="#F57C00" />
               </View>
-              <Text style={styles.overviewValue}>0</Text>
-              <View style={[styles.overviewBadge, { backgroundColor: '#e8f5e9' }]}>
-                <Text style={[styles.overviewBadgeText, { color: '#2e7d32' }]}>All Clear</Text>
-              </View>
-            </TouchableOpacity>
-          </Animated.View>
+              <Text style={styles.overviewTitle}>Pending Bill</Text>
+            </View>
+            <Text style={styles.overviewValue}>0</Text>
+            <View style={[styles.statusPill, { backgroundColor: '#E8F5E9' }]}>
+              <Text style={[styles.statusText, { color: '#388E3C' }]}>All Clear</Text>
+            </View>
+            <View style={[styles.overviewBlob, { backgroundColor: 'rgba(245, 124, 0, 0.04)' }]} />
+          </View>
 
-          <Animated.View entering={FadeInDown.delay(700).duration(800)} style={{ flex: 1 }}>
-            <TouchableOpacity style={styles.overviewCard}>
-              <Ionicons name="basket-outline" size={80} color="#c8e6c9" style={styles.watermarkIcon} />
-              <View style={styles.overviewHeader}>
-                <View style={[styles.overviewIconBox, { backgroundColor: '#e8f5e9' }]}>
-                  <Ionicons name="basket" size={16} color="#2e7d32" />
-                </View>
-                <Text style={styles.overviewTitle}>Today's Sales</Text>
+          {/* Today's Sales */}
+          <View style={styles.overviewCard}>
+            <View style={styles.overviewHeader}>
+              <View style={[styles.smallIconBox, { backgroundColor: '#E8F5E9' }]}>
+                <Ionicons name="basket" size={14} color="#388E3C" />
               </View>
-              <Text style={styles.overviewValue}>0</Text>
-              <View style={[styles.overviewBadge, { backgroundColor: '#e8f5e9' }]}>
-                <Text style={[styles.overviewBadgeText, { color: '#2e7d32' }]}>+0 from yesterday</Text>
+              <Text style={styles.overviewTitle}>Today's Sales</Text>
+            </View>
+            <Text style={styles.overviewValue}>0</Text>
+            <View style={[styles.statusPill, { backgroundColor: '#E8F5E9' }]}>
+              <Text style={[styles.statusText, { color: '#388E3C' }]}>+0 from yesterday</Text>
+            </View>
+            <View style={[styles.overviewBlob, { backgroundColor: 'rgba(56, 142, 60, 0.04)' }]} />
+          </View>
+
+          {/* Advance Given */}
+          <View style={styles.overviewCard}>
+            <View style={styles.overviewHeader}>
+              <View style={[styles.smallIconBox, { backgroundColor: '#E3F2FD' }]}>
+                <Ionicons name="cash" size={14} color="#1976D2" />
               </View>
-            </TouchableOpacity>
-          </Animated.View>
+              <Text style={styles.overviewTitle}>Advance Given</Text>
+            </View>
+            <Text style={styles.overviewValue}>0</Text>
+            <View style={[styles.statusPill, { backgroundColor: '#E3F2FD' }]}>
+              <Text style={[styles.statusText, { color: '#1976D2' }]}>Today</Text>
+            </View>
+            <View style={[styles.overviewBlob, { backgroundColor: 'rgba(25, 118, 210, 0.04)' }]} />
+          </View>
+
+          {/* Service Earnings */}
+          <View style={styles.overviewCard}>
+            <View style={styles.overviewHeader}>
+              <View style={[styles.smallIconBox, { backgroundColor: '#F3E5F5' }]}>
+                <Ionicons name="pie-chart" size={14} color="#7B1FA2" />
+              </View>
+              <Text style={styles.overviewTitle}>Service Earnings</Text>
+            </View>
+            <Text style={styles.overviewValue}>0</Text>
+            <View style={[styles.statusPill, { backgroundColor: '#F3E5F5' }]}>
+              <Text style={[styles.statusText, { color: '#7B1FA2' }]}>Today</Text>
+            </View>
+            <View style={[styles.overviewBlob, { backgroundColor: 'rgba(123, 31, 162, 0.04)' }]} />
+          </View>
         </View>
 
-        {/* Row 2 */}
-        <View style={styles.row}>
-          <Animated.View entering={FadeInDown.delay(800).duration(800)} style={{ flex: 1 }}>
-            <TouchableOpacity style={styles.overviewCard}>
-              <Ionicons name="wallet-outline" size={80} color="#bbdefb" style={styles.watermarkIcon} />
-              <View style={styles.overviewHeader}>
-                <View style={[styles.overviewIconBox, { backgroundColor: '#e3f2fd' }]}>
-                  <Ionicons name="wallet" size={16} color="#1565c0" />
-                </View>
-                <Text style={styles.overviewTitle}>Advance Given</Text>
-              </View>
-              <Text style={styles.overviewValue}>0</Text>
-              <View style={[styles.overviewBadge, { backgroundColor: '#e3f2fd' }]}>
-                <Text style={[styles.overviewBadgeText, { color: '#1565c0' }]}>Today</Text>
-              </View>
-            </TouchableOpacity>
-          </Animated.View>
-
-          <Animated.View entering={FadeInDown.delay(900).duration(800)} style={{ flex: 1 }}>
-            <TouchableOpacity style={styles.overviewCard}>
-              <Ionicons name="pie-chart-outline" size={80} color="#e1bee7" style={styles.watermarkIcon} />
-              <View style={styles.overviewHeader}>
-                <View style={[styles.overviewIconBox, { backgroundColor: '#f3e5f5' }]}>
-                  <Ionicons name="pie-chart" size={16} color="#7b1fa2" />
-                </View>
-                <Text style={styles.overviewTitle}>Service Earnings</Text>
-              </View>
-              <Text style={styles.overviewValue}>0</Text>
-              <View style={[styles.overviewBadge, { backgroundColor: '#f3e5f5' }]}>
-                <Text style={[styles.overviewBadgeText, { color: '#7b1fa2' }]}>Today</Text>
-              </View>
-            </TouchableOpacity>
-          </Animated.View>
-        </View>
-
-        {/* QUICK ACTIONS */}
+        {/* NEW QUICK ACTIONS DESIGN WITH OLD CONNECTIONS RESTORED */}
         <Text style={styles.sectionTitle}>Quick Actions</Text>
-        <View style={styles.row}>
-          <Animated.View entering={FadeInDown.delay(1000).duration(800)} style={{ flex: 1 }}>
-            <TouchableOpacity style={styles.quickActionCard}>
-              <View style={styles.cardBgCircleLightGreen} />
-              <View style={[styles.quickActionIconBox, { backgroundColor: '#dcedc8' }]}>
-                 <Ionicons name="person-add" size={28} color="#2e7d32" />
-              </View>
-              <Text style={styles.quickActionText}>Add People</Text>
-            </TouchableOpacity>
-          </Animated.View>
+        <View style={styles.grid}>
+          {/* Add Stock */}
+          <TouchableOpacity style={styles.actionCard} onPress={() => router.push('/add-stock')} activeOpacity={0.8}>
+            <View style={[styles.bigIconBox, { backgroundColor: '#E8F5E9' }]}>
+              <Ionicons name="add-circle" size={28} color="#388E3C" />
+            </View>
+            <Text style={styles.actionTitle}>Add Stock</Text>
+            <View style={[styles.blob, { backgroundColor: 'rgba(56, 142, 60, 0.03)', top: -20, right: -20 }]} />
+          </TouchableOpacity>
 
-          <Animated.View entering={FadeInDown.delay(1100).duration(800)} style={{ flex: 1 }}>
-            <TouchableOpacity style={styles.quickActionCard}>
-              <View style={styles.soonBadge}>
-                <Text style={styles.soonText}>Soon</Text>
-              </View>
-              <View style={styles.cardBgCircleLightPurple} />
-              <View style={[styles.quickActionIconBox, { backgroundColor: '#e1bee7' }]}>
-                 <Ionicons name="bar-chart" size={28} color="#7b1fa2" />
-              </View>
-              <Text style={styles.quickActionText}>Reports</Text>
-            </TouchableOpacity>
-          </Animated.View>
+          {/* Sell */}
+          <TouchableOpacity style={styles.actionCard} onPress={() => router.push('/sales-entry')} activeOpacity={0.8}>
+            <View style={[styles.bigIconBox, { backgroundColor: '#E3F2FD' }]}>
+              <Ionicons name="pricetag" size={28} color="#1976D2" />
+            </View>
+            <Text style={styles.actionTitle}>Sell</Text>
+            <View style={[styles.blob, { backgroundColor: 'rgba(25, 118, 210, 0.03)', top: -20, right: -20 }]} />
+          </TouchableOpacity>
+
+          {/* Add Advance */}
+          <TouchableOpacity style={styles.actionCard} onPress={() => router.push('/add-advance')} activeOpacity={0.8}>
+            <View style={[styles.bigIconBox, { backgroundColor: '#FFF3E0' }]}>
+              <Ionicons name="wallet" size={28} color="#F57C00" />
+            </View>
+            <Text style={styles.actionTitle}>Add Advance</Text>
+            <View style={[styles.blob, { backgroundColor: 'rgba(245, 124, 0, 0.03)', top: -20, right: -20 }]} />
+          </TouchableOpacity>
+
+          {/* Ledger */}
+          <TouchableOpacity style={styles.actionCard} onPress={() => router.push('/ledger')} activeOpacity={0.8}>
+            <View style={[styles.bigIconBox, { backgroundColor: '#F3E5F5' }]}>
+              <Ionicons name="book" size={28} color="#7B1FA2" />
+            </View>
+            <Text style={styles.actionTitle}>Ledger</Text>
+            <View style={[styles.blob, { backgroundColor: 'rgba(123, 31, 162, 0.03)', top: -20, right: -20 }]} />
+          </TouchableOpacity>
+
+          {/* Manage People */}
+          <TouchableOpacity style={styles.actionCard} onPress={() => router.push('/manage-users')} activeOpacity={0.8}>
+            <View style={[styles.bigIconBox, { backgroundColor: '#E8F5E9' }]}>
+              <Ionicons name="people" size={28} color="#388E3C" />
+            </View>
+            <Text style={styles.actionTitle}>People</Text>
+            <View style={[styles.blob, { backgroundColor: 'rgba(56, 142, 60, 0.03)', top: -20, right: -20 }]} />
+          </TouchableOpacity>
         </View>
 
-        {/* MARKET ANALYTICS */}
-        <Animated.View entering={FadeInDown.delay(1200).duration(800)}>
-          <TouchableOpacity style={styles.analyticsBanner}>
-            <View style={styles.proBadge}>
-              <Text style={styles.proText}>PRO FEATURE</Text>
-            </View>
-            <View style={styles.analyticsContent}>
-              <View style={{ flex: 1, paddingRight: 15 }}>
-                <Text style={styles.analyticsTitle}>Market Analytics</Text>
-                <Text style={styles.analyticsSub}>Get deep insights into your sales trends and performance.</Text>
-              </View>
-              <View style={styles.analyticsIconCircle}>
-                <Ionicons name="stats-chart" size={28} color="#283593" />
-              </View>
-            </View>
-          </TouchableOpacity>
-        </Animated.View>
-
+        <View style={{ height: 100 }} />
       </ScrollView>
 
       {/* FLOATING ACTION BUTTON */}
-      <TouchableOpacity style={styles.fab} onPress={() => router.push('/add-stock')}>
-        <Ionicons name="add" size={32} color="white" />
+      {fabOpen && (
+        <Animated.View entering={FadeInUp.duration(200)} exiting={FadeOutDown.duration(200)} style={styles.fabMenu}>
+          <TouchableOpacity style={styles.fabMenuItem} onPress={() => { setFabOpen(false); router.push('/upload-book?type=purchase'); }}>
+            <Text style={styles.fabMenuText}>Upload Purchase</Text>
+            <View style={styles.fabMenuIcon}>
+              <Ionicons name="cloud-upload" size={20} color="#FFF" />
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.fabMenuItem} onPress={() => { setFabOpen(false); router.push('/upload-book?type=sale'); }}>
+            <Text style={styles.fabMenuText}>Upload Sale</Text>
+            <View style={styles.fabMenuIcon}>
+              <Ionicons name="cloud-upload" size={20} color="#FFF" />
+            </View>
+          </TouchableOpacity>
+        </Animated.View>
+      )}
+
+      {fabOpen && (
+        <TouchableOpacity style={styles.fabOverlay} activeOpacity={1} onPress={() => setFabOpen(false)} />
+      )}
+
+      <TouchableOpacity
+        style={[styles.fab, fabOpen && styles.fabActive]}
+        activeOpacity={0.9}
+        onPress={() => setFabOpen(!fabOpen)}
+      >
+        <Ionicons name={fabOpen ? "close" : "add"} size={30} color="#FFF" />
       </TouchableOpacity>
 
-      {/* CUSTOM BOTTOM NAVIGATION */}
-      <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navItemActive}>
-          <Ionicons name="home" size={20} color="#2e7d32" />
-          <Text style={styles.navTextActive}>Home</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={() => router.push('/market-prices')}>
-          <MaterialCommunityIcons name="storefront-outline" size={24} color="#999" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={() => router.push('/ledger')}>
-          <Ionicons name="book-outline" size={24} color="#999" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={() => router.push('/assist')}>
-          <Ionicons name="headset-outline" size={24} color="#999" />
-        </TouchableOpacity>
-      </View>
     </View>
   );
 }
@@ -274,407 +230,195 @@ export default function Dashboard() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#F7F9FA', // very light clean background
   },
   header: {
-    backgroundColor: '#388e3c',
-    paddingTop: 50,
+    backgroundColor: '#2E7D32', // Original green
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingTop: Platform.OS === 'ios' ? 60 : 50,
     paddingBottom: 20,
-    paddingHorizontal: 15,
+    paddingHorizontal: 16,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
   },
-  headerContent: {
-    flexDirection: 'row',
+  logoBoxOriginal: {
+    width: 44,
+    height: 44,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 12,
+    justifyContent: 'center',
     alignItems: 'center',
-    justifyContent: 'space-between',
   },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  logoBox: {
-    backgroundColor: 'white',
-    padding: 6,
-    borderRadius: 8,
-    marginRight: 10,
-  },
-  logoText: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    color: '#2e7d32',
+  headerCenter: {
+    flex: 1,
+    marginLeft: 12,
   },
   greeting: {
-    color: 'white',
-    fontSize: 14,
+    fontSize: 18,
     fontWeight: 'bold',
+    color: '#FFF',
   },
-  welcome: {
-    color: '#c8e6c9',
-    fontSize: 12,
+  subtitle: {
+    fontSize: 14,
+    color: '#E8F5E9',
+    marginTop: 2,
   },
   profileBtn: {
-    backgroundColor: '#c8e6c9',
     width: 36,
     height: 36,
     borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  scrollArea: {
-    flex: 1,
+  content: {
+    padding: 16,
   },
-  carouselContainer: {
-    paddingVertical: 15,
-    paddingLeft: 15,
-    paddingRight: 15,
-  },
-  marketCard: {
-    width: width * 0.85,
-    backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    elevation: 2,
-  },
-  marketIconBox: {
-    backgroundColor: '#e3f2fd',
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 15,
-  },
-  marketTextContent: {
-    flex: 1,
-  },
-  marketTitle: {
-    color: '#1976d2',
-    fontWeight: 'bold',
-    fontSize: 12,
-    marginBottom: 4,
-    letterSpacing: 1,
-  },
-  marketSub: {
-    fontSize: 14,
-    color: '#333',
-    fontWeight: '600',
-    lineHeight: 20,
-  },
-  bannerContainer: {
-    marginHorizontal: 15,
-    backgroundColor: '#e8f5e9',
-    borderRadius: 20,
-    padding: 20,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: '#c8e6c9',
+  carouselContainer: { marginBottom: 24, paddingRight: 16 },
+  carouselCard: {
+    width: width - 32,
+    height: (width - 32) * 0.666,
+    backgroundColor: '#FFF',
+    borderRadius: 14,
+    marginRight: 16,
     overflow: 'hidden',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3,
   },
-  bannerContent: {
-    alignItems: 'center',
-  },
-  bannerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1b5e20',
-    marginBottom: 15,
-  },
-  bannerIcons: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-    width: '80%',
-    marginBottom: 15,
-  },
-  bannerHighlight: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#2e7d32',
-    marginBottom: 5,
-  },
-  bannerSubtext: {
-    fontSize: 12,
-    color: '#558b2f',
+  carouselImage: { width: '100%', height: '100%', resizeMode: 'cover' },
+  blob: {
+    position: 'absolute',
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    zIndex: 1,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#111',
-    marginHorizontal: 15,
-    marginBottom: 12,
-    marginTop: 5,
+    marginBottom: 16,
   },
-  row: {
+  grid: {
     flexDirection: 'row',
-    paddingHorizontal: 10,
-    marginBottom: 15,
-  },
-  actionCard: {
-    backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 15,
-    marginHorizontal: 5,
-    minHeight: 110,
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    elevation: 2,
-    overflow: 'hidden',
+    marginBottom: 24,
+    rowGap: 16,
   },
-  cardBgCircle1: {
-    position: 'absolute',
-    top: -20,
-    right: -20,
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#fff3e0',
-    opacity: 0.5,
-  },
-  cardBgCircle2: {
-    position: 'absolute',
-    top: -20,
-    right: -20,
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#f3e5f5',
-    opacity: 0.5,
-  },
-  iconWrapper: {
-    alignSelf: 'flex-start',
-    padding: 10,
-    borderRadius: 12,
-  },
-  cardBottomRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 15,
-  },
-  actionCardText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  // NEW STYLES
   overviewCard: {
-    backgroundColor: 'white',
+    width: '48%',
+    backgroundColor: '#FFF',
     borderRadius: 20,
-    padding: 15,
-    marginHorizontal: 5,
-    minHeight: 140,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    elevation: 2,
+    padding: 16,
     overflow: 'hidden',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.03, shadowRadius: 8, elevation: 2,
   },
   overviewHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: 12,
+    zIndex: 2,
   },
-  overviewIconBox: {
-    padding: 6,
+  smallIconBox: {
+    width: 28,
+    height: 28,
     borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: 8,
   },
   overviewTitle: {
     fontSize: 13,
-    fontWeight: 'bold',
+    fontWeight: '600',
     color: '#555',
-    flexShrink: 1,
+    flex: 1,
   },
   overviewValue: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: 'bold',
-    color: '#000',
-    marginBottom: 10,
+    color: '#111',
+    marginBottom: 12,
+    zIndex: 2,
   },
-  overviewBadge: {
+  statusPill: {
     alignSelf: 'flex-start',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
+    zIndex: 2,
   },
-  overviewBadgeText: {
+  statusText: {
     fontSize: 10,
     fontWeight: 'bold',
   },
-  watermarkIcon: {
+  overviewBlob: {
     position: 'absolute',
-    right: -20,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    right: -40,
     top: 20,
-    opacity: 0.3,
-    transform: [{ rotate: '-15deg' }]
+    zIndex: 1,
   },
-  quickActionCard: {
-    backgroundColor: 'white',
+  actionCard: {
+    width: '48%',
+    backgroundColor: '#FFF',
     borderRadius: 20,
-    padding: 20,
-    marginHorizontal: 5,
-    alignItems: 'flex-start',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    elevation: 2,
+    padding: 16,
+    height: 140,
+    justifyContent: 'flex-end',
     overflow: 'hidden',
-    minHeight: 120,
-    justifyContent: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.03, shadowRadius: 8, elevation: 2,
   },
-  quickActionIconBox: {
-    padding: 15,
+  bigIconBox: {
+    width: 60,
+    height: 60,
     borderRadius: 16,
-    marginBottom: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+    zIndex: 2,
   },
-  quickActionText: {
+  actionTitle: {
     fontSize: 15,
     fontWeight: 'bold',
     color: '#111',
-  },
-  cardBgCircleLightGreen: {
-    position: 'absolute',
-    top: -30,
-    right: -30,
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: '#e8f5e9',
-    opacity: 0.5,
-  },
-  cardBgCircleLightPurple: {
-    position: 'absolute',
-    top: -30,
-    right: -30,
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: '#f3e5f5',
-    opacity: 0.5,
+    zIndex: 2,
   },
   soonBadge: {
     position: 'absolute',
-    top: 0,
-    right: 0,
-    backgroundColor: '#fff3e0',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderBottomLeftRadius: 15,
-  },
-  soonText: {
-    color: '#e65100',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  analyticsBanner: {
-    backgroundColor: '#283593',
-    marginHorizontal: 15,
-    borderRadius: 24,
-    padding: 20,
-    marginBottom: 40,
-    shadowColor: '#283593',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  proBadge: {
-    alignSelf: 'flex-start',
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    paddingHorizontal: 10,
+    top: 16,
+    right: 16,
+    backgroundColor: '#FFF3E0',
+    paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
-    marginBottom: 15,
+    zIndex: 3,
   },
-  proText: {
-    color: 'white',
+  soonText: {
     fontSize: 10,
     fontWeight: 'bold',
-    letterSpacing: 1,
+    color: '#F57C00',
   },
-  analyticsContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  fabOverlay: {
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.1)', zIndex: 10
   },
-  analyticsTitle: {
-    color: 'white',
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  analyticsSub: {
-    color: '#c5cae9',
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  analyticsIconCircle: {
-    backgroundColor: 'white',
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  // END NEW STYLES
   fab: {
     position: 'absolute',
+    bottom: 30,
     right: 20,
-    bottom: 90,
-    backgroundColor: '#2e7d32',
     width: 60,
     height: 60,
-    borderRadius: 20,
+    borderRadius: 20, // Squircle shape like mockup
+    backgroundColor: '#388E3C',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#2e7d32',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 5,
-    elevation: 6,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 5, zIndex: 20,
   },
-  bottomNav: {
-    position: 'absolute',
-    bottom: 20,
-    left: 20,
-    right: 20,
-    backgroundColor: 'white',
-    borderRadius: 30,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    paddingVertical: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.1,
-    shadowRadius: 20,
-    elevation: 10,
-  },
-  navItem: {
-    padding: 10,
-  },
-  navItemActive: {
-    flexDirection: 'row',
-    backgroundColor: '#e8f5e9',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
-    alignItems: 'center',
-  },
-  navTextActive: {
-    color: '#2e7d32',
-    fontWeight: 'bold',
-    marginLeft: 6,
-  }
+  fabActive: { backgroundColor: '#1B5E20' },
+  fabMenu: { position: 'absolute', bottom: 100, right: 20, alignItems: 'flex-end', zIndex: 20 },
+  fabMenuItem: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
+  fabMenuText: { backgroundColor: '#FFF', color: '#333', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 6, fontSize: 14, fontWeight: '600', marginRight: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, elevation: 2 },
+  fabMenuIcon: { width: 48, height: 48, borderRadius: 24, backgroundColor: '#388E3C', justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.2, shadowRadius: 3, elevation: 3 }
 });
